@@ -20,15 +20,27 @@ io.on('connection', function (socket) {
         ids['user ' + socket.id] = boxy;
         boxes.push(boxy);
         console.log(boxes);
+
         io.emit('add box', boxes);
     });
+
 
     socket.on('∆', function (box) {
         for (var i in boxes) {
             if (boxes[i].name == box.name) {
                 boxes[i] = box;
+
             }
         }
+        if(boxes.length == 2){
+            if((boxes[0].x <= boxes[1].x + boxes[1].width && boxes[0].y <= boxes[1].y + boxes[1].height)
+                && boxes[0].x + boxes[0].width >= boxes[1].x && boxes[0].y + boxes[0].height >= boxes[1].y){
+
+                console.log('COLLIDE!!!');
+                io.emit('collide');
+            }
+        }
+
 
         socket.broadcast.emit('∆', box);
     });

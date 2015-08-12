@@ -23,8 +23,21 @@ window.addEventListener('keyup', function (e) {
 /** BOX HANDLING************************************************************/
 //Box Object
 var player = null;
+function randColor() {
+    var rand = Math.floor(Math.random() * 999);
+    if (rand % 10 == 0) {
+        return 'orange';
+    } else if (rand % 9 == 0) {
+        return 'blue';
+    } else if (rand % 4 == 0) {
+        return 'red';
+    } else {
+        return 'green';
+    }
+}
 function Box(options) {
     this.name = options.name;
+    this.color = options.color || randColor();
     this.x = options.x || 10;
     this.y = options.y || 10;
     this.prevx = options.x;
@@ -41,10 +54,19 @@ function newBox() {
         name: 'boxy ' + rand,
         x: 10,
         y: 10,
-        width: 16,
-        height: 16,
-        speed: 5
+        width: 3,
+        height:3,
+        speed: 10
     });
+    if (boxy.color == 'orange') {
+        boxy.speed = 5;
+    } else if (boxy.color == 'blue') {
+        boxy.speed = 5;
+    } else if (boxy.color == 'red') {
+        boxy.speed = 5;
+    } else {
+        boxy.speed = 5;
+    }
     socket.emit('init box', boxy);
     player = boxy;
 }
@@ -65,22 +87,22 @@ function destroyBox(box) {
 }
 
 function drawBox(box) {
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = box.color;
     ctx.fillRect(box.x, box.y, box.width, box.height);
 }
 
 function boxMotion(box) {
-    if (65 in keys || 68 in keys || 87 in keys || 83 in keys) {
+    if (65 in keys || 68 in keys || 87 in keys || 83 in keys || 38 in keys || 37 in keys || 40 in keys || 39 in keys) {
         ctx.clearRect(box.x, box.y, box.width, box.height);
         box.prevx = box.x;
         box.prevy = box.y;
-        if (65 in keys) {
+        if (65 in keys || 37 in keys) {
             box.x -= box.speed;
-        } else if (68 in keys) {
+        } else if (68 in keys || 39 in keys) {
             box.x += box.speed;
-        } else if (87 in keys) {
+        } else if (87 in keys || 38 in keys) {
             box.y -= box.speed;
-        } else if (83 in keys) {
+        } else if (83 in keys || 40 in keys) {
             box.y += box.speed;
         }
         socket.emit('∆', box);
@@ -91,12 +113,12 @@ function boxMotion(box) {
     }
 }
 
-socket.on('add box', function(boxes){
-   for(var i in boxes){
-       if(boxes[i].name != player.name){
-           drawBox(boxes[i]);
-       }
-   }
+socket.on('add box', function (boxes) {
+    for (var i in boxes) {
+        if (boxes[i].name != player.name) {
+            drawBox(boxes[i]);
+        }
+    }
 });
 
 socket.on('∆', function (box) {
@@ -104,11 +126,20 @@ socket.on('∆', function (box) {
     drawBox(box);
 });
 
+socket.on('collide', function () {
+    ctx.fillStyle = 'red';
+    ctx.font = '30px Arial';
+    ctx.fillText('COLLIDED!!!', 0, 30);
+    setTimeout(function () {
+        ctx.clearRect(0, 0, canvas.width, 35);
+    }, 5000)
+});
+
 socket.on('destroy box', function (box) {
     destroyBox(box);
 });
 
 newBox();
-setInterval(function(){
+setInterval(function () {
     boxMotion(player);
-}, 30);
+}, 5);
